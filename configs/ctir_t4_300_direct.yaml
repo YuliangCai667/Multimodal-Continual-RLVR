@@ -1,0 +1,55 @@
+experiment_id: EXP-CTIR-T4-DIRECT-300
+name: T4-CTIR-DirectRotation-300
+continual_start_step: 900
+task: Puzzle
+model_start: checkpoints/Qwen3-VL-4B/GRPO-CL/training/We-Math2
+comparator: checkpoints/Qwen3-VL-4B/GRPO-CL/training/Puzzle
+hardware:
+  physical_gpus: [0, 1, 2, 3]
+  world_size: 4
+training:
+  max_steps: 300
+  save_steps: 30
+  logging_steps: 1
+  num_generations: 8
+  per_device_train_batch_size: 8
+  gradient_accumulation_steps: 4
+  learning_rate: 5.0e-6
+  weight_decay: 0.1
+  warmup_ratio: 0.1
+  lr_scheduler_type: cosine
+  bf16: true
+  tf32: true
+  deepspeed: scripts/zero3_offload.json
+  max_completion_length: 2048
+  temperature: 0.8
+  top_p: 1.0
+  top_k: 0
+  epsilon: 0.2
+  epsilon_high: 0.27
+  seed: 42
+  data_seed: null
+  full_determinism: false
+ctir:
+  protected_layers: [9, 26]
+  protected_modules: [q_proj, k_proj, v_proj, o_proj, gate_proj, up_proj, down_proj]
+  tangent_rank: 8
+  raw_dominant_rank: 8
+  raw_delta_is_truncated: false
+  refresh_interval: 5
+  beta_candidates: [0.0, 0.25, 0.5, 0.75, 1.0]
+  probe_count: 32
+  probe_seed: 142
+  probe_target: full_text_only_thought
+  spectrum_object: complete FP32 AdamW master-parameter delta
+  transport: identity-connected principal-plane direct rotation
+  controller:
+    family: global beta grid
+    hard_new_descent_ratio: 0.90
+    old_harm_threshold: 0.0
+    objective: lexicographic positive-old-constraint violation, then full-update Frobenius distance
+    empty_joint_feasible_fallback: minimum old-constraint violation, then distance
+artifacts:
+  step_metrics: experiments/ctir_t4_300/logs/step_metrics.jsonl
+  tangent_refresh: experiments/ctir_t4_300/logs/tangent_refresh.jsonl
+  checkpoints: checkpoints/Qwen3-VL-4B/CTIR-T4-300-Direct/training/Puzzle
