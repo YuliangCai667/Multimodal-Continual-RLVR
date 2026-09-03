@@ -45,20 +45,23 @@ if not torch.cuda.is_available() or count != 1:
         f"CUDA_VISIBLE_DEVICES={visible_devices}"
     )
 name = torch.cuda.get_device_name(0)
+total_memory_gb = torch.cuda.get_device_properties(0).total_memory / 1e9
 expected = os.environ.get("MRCL_EXPECTED_GPU", "")
 if expected and expected not in name:
     raise RuntimeError(f"Expected GPU containing {expected!r}, got {name!r}")
+if total_memory_gb < float(os.environ.get("MRCL_MIN_GPU_MEMORY_GB", "75")):
+    raise RuntimeError(f"GPU memory is only {total_memory_gb:.2f} GB on {name}")
 print(
     f"worker host={socket.gethostname()} rank={rank}/{world_size} "
     f"slurm_localid={slurm_localid} "
-    f"gpu={name}",
+    f"gpu={name} total_memory_gb={total_memory_gb:.2f}",
     flush=True,
 )
 '
 
 # vLLM TP=1 evaluation workers are independent data-parallel replicas. Keep
 # the shard identity, but remove torch distributed rendezvous variables so
-# vLLM does not mistake the eight replicas for one tensor-parallel engine.
+# vLLM TP=1 evaluation workers are independent four-way data-parallel replicas.
 if [ "${MRCL_WORKER_MODE:-train}" = "eval" ]; then
     export MRCL_SHARD_RANK=$RANK
     export MRCL_NUM_SHARDS=$WORLD_SIZE

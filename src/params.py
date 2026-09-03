@@ -151,6 +151,25 @@ class GRPOTrainingArguments:
     ctir_exact_spectrum_check: bool = False
     ctir_stop_after_steps: Optional[int] = None
 
+    # Explicit multi-old-task CTIR path.  It is deliberately separate from
+    # ctir_enable so the frozen single-Navigation experiment remains unchanged.
+    ctir_multitask_enable: bool = False
+    ctir_multitask_probe_index_path: Optional[str] = None
+    ctir_multitask_probe_count: int = 32
+    ctir_multitask_layer_start: int = 9
+    ctir_multitask_layer_end: int = 26
+    ctir_multitask_tangent_rank: int = 8
+    ctir_multitask_raw_rank: int = 8
+    ctir_multitask_refresh_interval: int = 5
+    ctir_multitask_union_rtol: float = 1e-6
+    ctir_multitask_new_descent_ratio: float = 0.90
+    ctir_multitask_beta_candidates: str = "0,0.25,0.5,0.75,1.0"
+    ctir_multitask_continual_start_step: int = 0
+    ctir_multitask_log_dir: Optional[str] = None
+    ctir_multitask_force_beta: Optional[float] = None
+    ctir_multitask_exact_spectrum_check: bool = False
+    ctir_multitask_stop_after_steps: Optional[int] = None
+
 @dataclass
 class DataArguments:
     data_path: str = field(

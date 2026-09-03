@@ -1,0 +1,38 @@
+experiment_id: EXP-CTIR-MULTI-T1-T5-001
+name: T1-T5-MultiTask-CTIR-H100x-4GPU
+task_order: [MedBookVQA, Navigation, We-Math2, Puzzle, FinMME]
+method_schedule:
+  T1: naive_GRPO
+  T2: CTIR_with_1_old_task
+  T3: CTIR_with_2_old_tasks
+  T4: CTIR_with_3_old_tasks
+  T5: CTIR_with_4_old_tasks
+training:
+  max_steps_per_task: 300
+  world_size: 4
+  per_device_train_batch_size: 8
+  gradient_accumulation_steps: 4
+  nominal_global_batch: 128
+  num_generations: 8
+  seed: 42
+ctir:
+  probes_per_old_task: 32
+  probe_seed_per_task: 142
+  tangent_rank_per_task: 8
+  raw_direction_rank: 8
+  union_rank_cap: 8_times_old_task_count
+  union_rank_rule: fp64_svd_relative_threshold_1e-6
+  refresh_interval_optimizer_steps: 5
+  beta_candidates: [0.0, 0.25, 0.5, 0.75, 1.0]
+  new_task_descent_floor: 0.90
+  old_task_constraint: each_H_k_lte_0
+  controller: lexicographic_worst_positive_normalized_H_k_then_update_distance_then_beta
+  delta: complete_post_AdamW_FP32_master_delta
+  transport: identity_connected_principal_plane_direct_rotation
+h100_80gb:
+  zero_stage: 3
+  parameter_offload: cpu
+  optimizer_offload: cpu
+  allocator: expandable_segments_with_128MiB_max_split
+  mandatory_preflight: T5_geometry_4_old_tasks_stop_after_optimizer_step_2
+  note: formal_T1_starts_only_after_same_allocation_preflight_passes

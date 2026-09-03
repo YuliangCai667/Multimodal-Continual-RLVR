@@ -16,7 +16,9 @@ from transformers import (
 )
 from trl import GRPOTrainer, GRPOConfig
 from src.ctir.config import CTIRConfig
+from src.ctir.multitask_config import MultiTaskCTIRConfig
 from src.trainer.grpo_trainer_cl import CLGRPOTrainer
+from src.trainer.multitask_tangent_iso_grpo_trainer import MultiTaskTangentIsoGRPOTrainer
 from src.trainer.tangent_iso_grpo_trainer import TangentIsoGRPOTrainer
 
 from src.dataset import make_grpo_data_module
@@ -259,7 +261,22 @@ def train():
         peft_config=peft_config,
     )
 
-    if training_args.ctir_enable:
+    if training_args.ctir_enable and training_args.ctir_multitask_enable:
+        raise ValueError("ctir_enable and ctir_multitask_enable are mutually exclusive")
+    if training_args.ctir_multitask_enable:
+        if training_args.mask_path:
+            raise ValueError("Multi-task CTIR must run on naive GRPO, not CPO mask regularization")
+        if not training_args.ctir_multitask_probe_index_path or not training_args.ctir_multitask_log_dir:
+            raise ValueError(
+                "ctir_multitask_probe_index_path and ctir_multitask_log_dir are required"
+            )
+        trainer = MultiTaskTangentIsoGRPOTrainer(
+            ctir_config=MultiTaskCTIRConfig.from_training_args(training_args),
+            ctir_model_path=model_args.model_id,
+            ctir_prompt_path=data_args.prompt_path,
+            **trainer_kwargs,
+        )
+    elif training_args.ctir_enable:
         if training_args.mask_path:
             raise ValueError("CTIR must run on naive GRPO, not CLGRPOTrainer/CPO mask regularization")
         if not training_args.ctir_probe_path or not training_args.ctir_log_dir:

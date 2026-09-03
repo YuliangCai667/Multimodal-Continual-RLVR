@@ -2,6 +2,8 @@
 
 This private research codebase builds on the official **RL Forgets / CPO / MRCL** release and adds reproducible local experiment tooling plus Current-State Tangent-Aware Isospectral Update Redirection (CTIR). The original project attribution and citation are retained below.
 
+For the complete four-H100 CTIR run over T1 through T5, use the pinned setup and launch procedure in [CTIR_MULTITASK_H100_4GPU.md](CTIR_MULTITASK_H100_4GPU.md). That launcher keeps the four-card PRO 6000 batch protocol (`8 × 4 × gradient accumulation 4 = 128`) and runs a mandatory worst-case two-step memory preflight before formal T1.
+
 <p align="center">
   <a href="https://huggingface.co/datasets/MaolinLuo/MRCL"><img src="https://img.shields.io/badge/%F0%9F%A4%97%20Hugging%20Face-MRCL%20Dataset-FFD21E.svg" alt="Hugging Face Dataset"></a>
   &nbsp;&nbsp;
